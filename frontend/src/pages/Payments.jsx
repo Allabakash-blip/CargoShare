@@ -3,19 +3,17 @@ import { useSearchParams } from "react-router-dom";
 
 import {
   CreditCard,
-  Plus,
   Pencil,
   Trash2,
 } from "lucide-react";
 
 import {
   getPayments,
-  createPayment,
   updatePayment,
   deletePayment,
 } from "../services/paymentService";
 
-import CreatePaymentModal from "../components/Payments/CreatePaymentModal";
+
 import EditPaymentModal from "../components/Payments/EditPaymentModal";
 
 import StatusBadge from "../components/ui/StatusBadge";
@@ -45,7 +43,7 @@ export default function Payments() {
 
   const [payments, setPayments] = useState([]);
 
-  const [openModal, setOpenModal] = useState(false);
+  
 
   const [editModalOpen, setEditModalOpen] = useState(false);
 
@@ -97,29 +95,7 @@ export default function Payments() {
     }
   };
 
-  const handleCreatePayment = async (
-    paymentData
-  ) => {
-    try {
-      await createPayment(paymentData);
-
-      toast.success(
-        "Payment created successfully!"
-      );
-
-      fetchPayments();
-
-      setOpenModal(false);
-
-    } catch (error) {
-      console.error(error);
-
-      toast.error(
-        error.response?.data?.detail ||
-          "Failed to create payment"
-      );
-    }
-  };
+  
 
   const openEditModal = (payment) => {
     setSelectedPayment(payment);
@@ -192,17 +168,6 @@ export default function Payments() {
         title="Payments"
         subtitle="Manage payment transactions and history."
       >
-        {(user?.role === "Trader" ||
-          user?.role === "Admin") && (
-
-          <Button
-            leftIcon={Plus}
-            onClick={() => setOpenModal(true)}
-          >
-            New Payment
-          </Button>
-
-        )}
       </PageHeader>
       <div
   className="
@@ -354,14 +319,16 @@ export default function Payments() {
                     dark:text-green-300
                   "
                 >
-                  ₹ {payment.amount}
+                  ₹ {Number(payment.amount).toLocaleString("en-IN")}
                 </span>
 
               </td>
 
               <td className="px-6 py-5 text-slate-700 dark:text-slate-300">
-                {payment.payment_method}
-              </td>
+  {payment.payment_method === "Auto"
+    ? "Not Selected"
+    : payment.payment_method ||"Not Selected"}
+</td>
 
               <td className="px-6 py-5">
                 <StatusBadge
@@ -459,7 +426,13 @@ export default function Payments() {
                   </p>
 
                   <p className="mt-2 text-sm">
-                    Create a payment to get started.
+                    <p className="text-xl font-semibold">
+  No Payments Found
+</p>
+
+<p className="mt-2 text-sm">
+  Payments are automatically created when a booking is completed.
+</p>
                   </p>
 
                 </div>
@@ -480,18 +453,7 @@ export default function Payments() {
 
 </div>
 
-      {(user?.role === "Trader" ||
-        user?.role === "Admin") && (
-
-        <CreatePaymentModal
-          isOpen={openModal}
-          onClose={() =>
-            setOpenModal(false)
-          }
-          onCreate={handleCreatePayment}
-        />
-
-      )}
+      
 
       {(user?.role === "Trader" ||
         user?.role === "Admin") &&

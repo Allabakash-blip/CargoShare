@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
 import {
   X,
   CreditCard,
   IndianRupee,
+  WalletCards,
   BadgeCheck,
 } from "lucide-react";
 
@@ -15,61 +18,80 @@ export default function EditPaymentModal({
   const [paymentStatus, setPaymentStatus] =
     useState("Pending");
 
+  const [paymentMethod, setPaymentMethod] =
+    useState("Auto");
+
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     if (payment) {
       setPaymentStatus(
-        payment.payment_status
+        payment.payment_status || "Pending"
+      );
+
+      setPaymentMethod(
+        payment.payment_method || "Auto"
       );
     }
   }, [payment]);
 
   const handleSubmit = async () => {
-    await onUpdate({
-      payment_status: paymentStatus,
-    });
+    try {
+      setLoading(true);
 
-    onClose();
+      await onUpdate({
+        payment_method: paymentMethod,
+        payment_status: paymentStatus,
+      });
+
+      onClose();
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen || !payment) return null;
 
-  return (
+  return createPortal(
     <div
       className="
-      fixed
-      inset-0
-      z-50
+        fixed
+        inset-0
+        z-[9999]
 
-      flex
-      items-center
-      justify-center
+        flex
+        items-center
+        justify-center
 
-      bg-black/50
-      backdrop-blur-sm
+        bg-black/50
+        backdrop-blur-sm
 
-      p-6
+        p-4
       "
     >
       <div
         className="
-        relative
+          relative
 
-        w-full
-        max-w-xl
+          w-full
+          max-w-xl
 
-        rounded-3xl
+          max-h-[90vh]
+          overflow-y-auto
 
-        bg-white
-        dark:bg-slate-900
+          rounded-3xl
 
-        border
-        border-slate-200
-        dark:border-slate-700
+          bg-white
+          dark:bg-slate-900
 
-        shadow-2xl
+          border
+          border-slate-200
+          dark:border-slate-700
 
-        transition-colors
-        duration-300
+          shadow-2xl
+
+          transition-colors
+          duration-300
         "
       >
 
@@ -77,51 +99,72 @@ export default function EditPaymentModal({
 
         <div
           className="
-          flex
-          items-center
-          justify-between
+            flex
+            items-center
+            justify-between
 
-          px-8
-          py-6
+            px-8
+            py-6
 
-          border-b
-          border-slate-200
-          dark:border-slate-700
+            border-b
+            border-slate-200
+            dark:border-slate-700
           "
         >
           <div>
 
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h2
+              className="
+                text-2xl
+                font-bold
+                text-slate-900
+                dark:text-white
+              "
+            >
               Update Payment
             </h2>
 
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Modify payment status
+            <p
+              className="
+                text-sm
+                text-slate-500
+                dark:text-slate-400
+                mt-1
+              "
+            >
+              Modify payment details
             </p>
 
           </div>
 
           <button
+            type="button"
             onClick={onClose}
+            disabled={loading}
             className="
-            h-10
-            w-10
+              h-10
+              w-10
 
-            rounded-xl
+              rounded-xl
 
-            flex
-            items-center
-            justify-center
+              flex
+              items-center
+              justify-center
 
-            hover:bg-slate-100
-            dark:hover:bg-slate-800
+              hover:bg-slate-100
+              dark:hover:bg-slate-800
 
-            transition
+              transition
+
+              disabled:opacity-50
             "
           >
             <X
               size={20}
-              className="text-slate-600 dark:text-slate-300"
+              className="
+                text-slate-600
+                dark:text-slate-300
+              "
             />
           </button>
 
@@ -137,7 +180,12 @@ export default function EditPaymentModal({
 
             <CreditCard
               size={18}
-              className="absolute left-4 top-4 text-slate-400"
+              className="
+                absolute
+                left-4
+                top-4
+                text-slate-400
+              "
             />
 
             <input
@@ -145,23 +193,23 @@ export default function EditPaymentModal({
               disabled
               value={`Booking #${payment.booking_id}`}
               className="
-              w-full
+                w-full
 
-              rounded-2xl
+                rounded-2xl
 
-              border
-              border-slate-300
-              dark:border-slate-600
+                border
+                border-slate-300
+                dark:border-slate-600
 
-              bg-slate-100
-              dark:bg-slate-800
+                bg-slate-100
+                dark:bg-slate-800
 
-              text-slate-700
-              dark:text-white
+                text-slate-700
+                dark:text-white
 
-              pl-11
-              pr-4
-              py-3
+                pl-11
+                pr-4
+                py-3
               "
             />
 
@@ -173,78 +221,161 @@ export default function EditPaymentModal({
 
             <IndianRupee
               size={18}
-              className="absolute left-4 top-4 text-slate-400"
+              className="
+                absolute
+                left-4
+                top-4
+                text-slate-400
+              "
             />
 
             <input
               type="text"
               disabled
-              value={payment.amount}
+              value={Number(payment.amount).toLocaleString(
+                "en-IN"
+              )}
               className="
-              w-full
+                w-full
 
-              rounded-2xl
+                rounded-2xl
 
-              border
-              border-slate-300
-              dark:border-slate-600
+                border
+                border-slate-300
+                dark:border-slate-600
 
-              bg-slate-100
-              dark:bg-slate-800
+                bg-slate-100
+                dark:bg-slate-800
 
-              text-slate-700
-              dark:text-white
+                text-slate-700
+                dark:text-white
 
-              pl-11
-              pr-4
-              py-3
+                pl-11
+                pr-4
+                py-3
               "
             />
 
           </div>
 
-          {/* Status */}
+          {/* Payment Method */}
+
+          <div className="relative">
+
+            <WalletCards
+              size={18}
+              className="
+                absolute
+                left-4
+                top-4
+                text-slate-400
+              "
+            />
+
+            <select
+              value={paymentMethod}
+              onChange={(e) =>
+                setPaymentMethod(e.target.value)
+              }
+              disabled={loading}
+              className="
+                w-full
+
+                rounded-2xl
+
+                border
+                border-slate-300
+                dark:border-slate-600
+
+                bg-white
+                dark:bg-slate-800
+
+                text-slate-900
+                dark:text-white
+
+                pl-11
+                pr-4
+                py-3
+
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500
+
+                transition
+
+                disabled:opacity-60
+              "
+            >
+
+              <option value="Auto">
+                Auto
+              </option>
+
+              <option value="UPI">
+                UPI
+              </option>
+
+              <option value="Cash">
+                Cash
+              </option>
+
+              <option value="Bank Transfer">
+                Bank Transfer
+              </option>
+
+            </select>
+
+          </div>
+
+          {/* Payment Status */}
 
           <div className="relative">
 
             <BadgeCheck
               size={18}
-              className="absolute left-4 top-4 text-slate-400"
+              className="
+                absolute
+                left-4
+                top-4
+                text-slate-400
+              "
             />
 
             <select
               value={paymentStatus}
               onChange={(e) =>
-                setPaymentStatus(
-                  e.target.value
-                )
+                setPaymentStatus(e.target.value)
               }
+              disabled={loading}
               className="
-              w-full
+                w-full
 
-              rounded-2xl
+                rounded-2xl
 
-              border
-              border-slate-300
-              dark:border-slate-600
+                border
+                border-slate-300
+                dark:border-slate-600
 
-              bg-white
-              dark:bg-slate-800
+                bg-white
+                dark:bg-slate-800
 
-              text-slate-900
-              dark:text-white
+                text-slate-900
+                dark:text-white
 
-              pl-11
-              pr-4
-              py-3
+                pl-11
+                pr-4
+                py-3
 
-              focus:outline-none
-              focus:ring-2
-              focus:ring-blue-500
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500
 
-              transition
+                transition
+
+                disabled:opacity-60
               "
             >
+
               <option value="Pending">
                 Pending
               </option>
@@ -267,73 +398,86 @@ export default function EditPaymentModal({
 
         <div
           className="
-          flex
-          justify-end
-          gap-3
+            flex
+            justify-end
+            gap-3
 
-          px-8
-          py-6
+            px-8
+            py-6
 
-          border-t
-          border-slate-200
-          dark:border-slate-700
+            border-t
+            border-slate-200
+            dark:border-slate-700
           "
         >
 
           <button
+            type="button"
             onClick={onClose}
+            disabled={loading}
             className="
-            px-6
-            py-3
+              px-6
+              py-3
 
-            rounded-2xl
+              rounded-2xl
 
-            border
-            border-slate-300
-            dark:border-slate-600
+              border
+              border-slate-300
+              dark:border-slate-600
 
-            text-slate-700
-            dark:text-slate-300
+              text-slate-700
+              dark:text-slate-300
 
-            hover:bg-slate-100
-            dark:hover:bg-slate-800
+              hover:bg-slate-100
+              dark:hover:bg-slate-800
 
-            transition
+              transition
+
+              disabled:opacity-50
             "
           >
             Cancel
           </button>
 
           <button
+            type="button"
             onClick={handleSubmit}
+            disabled={loading}
             className="
-            px-7
-            py-3
+              px-7
+              py-3
 
-            rounded-2xl
+              rounded-2xl
 
-            bg-gradient-to-r
-            from-blue-600
-            to-cyan-500
+              bg-gradient-to-r
+              from-blue-600
+              to-cyan-500
 
-            text-white
-            font-semibold
+              text-white
+              font-semibold
 
-            shadow-lg
-            shadow-blue-500/30
+              shadow-lg
+              shadow-blue-500/30
 
-            hover:scale-105
+              hover:scale-105
 
-            transition-all
-            duration-300
+              transition-all
+              duration-300
+
+              disabled:opacity-60
+              disabled:hover:scale-100
             "
           >
-            Update Payment
+            {loading
+              ? "Updating..."
+              : "Update Payment"}
           </button>
 
         </div>
 
       </div>
-    </div>
+    </div>,
+
+    document.body
   );
 }

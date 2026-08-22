@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -14,6 +15,7 @@ class PaymentCreate(BaseModel):
 
 class PaymentUpdate(BaseModel):
     payment_status: str
+    payment_method: Optional[str] = None
 
 
 class PaymentResponse(BaseModel):

@@ -17,6 +17,12 @@ class Booking(Base):
     goods_description = Column(String(255), nullable=False)
     weight = Column(Float, nullable=False)
 
+    # Booking amount
+    amount = Column(Float, nullable=False, default=0)
+
     status = Column(String(30), default="Pending")
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )

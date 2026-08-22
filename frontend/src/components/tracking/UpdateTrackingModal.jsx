@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Button from "../ui/Button";
 
 export default function UpdateTrackingModal({
@@ -9,7 +10,7 @@ export default function UpdateTrackingModal({
 }) {
   const [loading, setLoading] = useState(false);
 
-const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     current_location: "",
     shipment_status: "",
   });
@@ -17,8 +18,8 @@ const [formData, setFormData] = useState({
   useEffect(() => {
     if (tracking) {
       setFormData({
-        current_location: tracking.current_location,
-        shipment_status: tracking.shipment_status,
+        current_location: tracking.current_location || "",
+        shipment_status: tracking.shipment_status || "",
       });
     }
   }, [tracking]);
@@ -26,23 +27,40 @@ const [formData, setFormData] = useState({
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    await onUpdate(formData);
+      await onUpdate(formData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  } finally {
-    setLoading(false);
-  }
-};
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  return createPortal(
+    <div
+      className="
+        fixed
+        inset-0
+        z-[9999]
+        flex
+        items-center
+        justify-center
+        bg-black/50
+        backdrop-blur-sm
+        p-4
+      "
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
         className="
-          w-[480px]
+          w-full
+          max-w-[480px]
           rounded-3xl
           bg-white
           dark:bg-slate-900
@@ -54,17 +72,38 @@ const [formData, setFormData] = useState({
           transition-colors
           duration-300
         "
+        onMouseDown={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
+        {/* Header */}
+
+        <h2
+          className="
+            text-2xl
+            font-bold
+            text-slate-900
+            dark:text-white
+            mb-8
+          "
+        >
           Update Shipment
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
           {/* Current Location */}
 
           <div>
-            <label className="block mb-2 font-medium text-slate-700 dark:text-slate-300">
+            <label
+              className="
+                block
+                mb-2
+                font-medium
+                text-slate-700
+                dark:text-slate-300
+              "
+            >
               Current Location
             </label>
 
@@ -102,7 +141,15 @@ const [formData, setFormData] = useState({
           {/* Shipment Status */}
 
           <div>
-            <label className="block mb-2 font-medium text-slate-700 dark:text-slate-300">
+            <label
+              className="
+                block
+                mb-2
+                font-medium
+                text-slate-700
+                dark:text-slate-300
+              "
+            >
               Shipment Status
             </label>
 
@@ -145,10 +192,10 @@ const [formData, setFormData] = useState({
           {/* Buttons */}
 
           <div className="flex justify-end gap-4 pt-4">
-
             <button
               type="button"
               onClick={onClose}
+              disabled={loading}
               className="
                 px-5
                 py-3
@@ -161,30 +208,31 @@ const [formData, setFormData] = useState({
                 hover:bg-slate-100
                 dark:hover:bg-slate-800
                 transition
+                disabled:opacity-50
+                disabled:cursor-not-allowed
               "
             >
               Cancel
             </button>
 
             <Button
-  type="submit"
-  loading={loading}
-  disabled={loading}
-  className="
-    rounded-xl
-    bg-blue-600
-    hover:bg-blue-700
-    text-white
-    font-semibold
-  "
->
-  Update Shipment
-</Button>
-
+              type="submit"
+              loading={loading}
+              disabled={loading}
+              className="
+                rounded-xl
+                bg-blue-600
+                hover:bg-blue-700
+                text-white
+                font-semibold
+              "
+            >
+              Update Shipment
+            </Button>
           </div>
-
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

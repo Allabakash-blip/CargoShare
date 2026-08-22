@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "react-toastify";
 import { saveToken } from "../utils/auth";
 
@@ -890,247 +891,290 @@ export default function Profile() {
       </div>
 
       {/* ========================================= */}
-      {/* PROFILE PICTURE MAXIMUM PREVIEW */}
-      {/* ========================================= */}
-
-      {showPicturePreview &&
-        profile.profile_picture && (
-
-          <div
-            className="
-              fixed
-              inset-0
-              z-[9999]
-              flex
-              items-center
-              justify-center
-              bg-black/80
-              backdrop-blur-sm
-              p-6
-            "
-            onClick={() =>
-              setShowPicturePreview(false)
-            }
-          >
-
-            <div
-              className="
-                relative
-                max-w-[90vw]
-                max-h-[90vh]
-              "
-              onClick={(e) =>
-                e.stopPropagation()
-              }
-            >
-
-              <img
-                src={
-                  profile.profile_picture.startsWith(
-                    "http"
-                  )
-                    ? profile.profile_picture
-                    : `http://127.0.0.1:8000/${profile.profile_picture}`
-                }
-                alt="Profile Preview"
-                className="
-                  max-w-[90vw]
-                  max-h-[85vh]
-                  w-auto
-                  h-auto
-                  object-contain
-                  rounded-xl
-                  shadow-2xl
-                "
-              />
-
-              <button
-                onClick={() =>
-                  setShowPicturePreview(false)
-                }
-                className="
-                  absolute
-                  -top-4
-                  -right-4
-                  h-10
-                  w-10
-                  rounded-full
-                  bg-white
-                  text-slate-800
-                  text-2xl
-                  font-bold
-                  shadow-lg
-                  hover:bg-red-500
-                  hover:text-white
-                  transition
-                "
-              >
-                ×
-              </button>
-
-            </div>
-
-          </div>
-        )}
-      {/* ========================================= */}
-{/* REMOVE PROFILE PICTURE CONFIRMATION */}
+{/* PROFILE PICTURE PREVIEW */}
 {/* ========================================= */}
 
-{showRemoveConfirm && (
-  <div
-    className="
-      fixed
-      inset-0
-      z-[10000]
-      flex
-      items-center
-      justify-center
-      bg-black/70
-      backdrop-blur-sm
-      p-6
-    "
-    onClick={() =>
-      setShowRemoveConfirm(false)
-    }
-  >
-
+{showPicturePreview &&
+  profile.profile_picture &&
+  createPortal(
     <div
       className="
-        w-full
-        max-w-md
-        rounded-2xl
-        bg-white
-        dark:bg-slate-900
-        border
-        border-slate-200
-        dark:border-slate-700
-        shadow-2xl
+        fixed
+        inset-0
+        z-[99998]
+
+        flex
+        items-center
+        justify-center
+
+        bg-black/80
+        backdrop-blur-sm
+
         p-6
       "
-      onClick={(e) =>
-        e.stopPropagation()
+      onClick={() =>
+        setShowPicturePreview(false)
       }
     >
-
-      {/* Icon */}
-
       <div
         className="
-          mx-auto
-          mb-4
-          flex
-          h-14
-          w-14
-          items-center
-          justify-center
-          rounded-full
-          bg-red-100
-          dark:bg-red-900/30
-          text-red-600
-          dark:text-red-400
-          text-2xl
+          relative
+          max-w-[90vw]
+          max-h-[90vh]
         "
+        onClick={(e) =>
+          e.stopPropagation()
+        }
       >
-        🗑️
-      </div>
+        <img
+          src={
+            profile.profile_picture.startsWith(
+              "http"
+            )
+              ? profile.profile_picture
+              : `http://127.0.0.1:8000/${profile.profile_picture}`
+          }
+          alt="Profile Preview"
+          className="
+            max-w-[90vw]
+            max-h-[85vh]
 
-      {/* Title */}
+            w-auto
+            h-auto
 
-      <h3
-        className="
-          text-xl
-          font-bold
-          text-center
-          text-slate-800
-          dark:text-white
-        "
-      >
-        Remove Profile Picture?
-      </h3>
+            object-contain
 
-      {/* Message */}
+            rounded-xl
 
-      <p
-        className="
-          mt-2
-          text-center
-          text-sm
-          text-slate-500
-          dark:text-slate-400
-        "
-      >
-        Are you sure you want to remove
-        your profile picture?
-      </p>
-
-      {/* Buttons */}
-
-      <div
-        className="
-          mt-6
-          flex
-          justify-end
-          gap-3
-        "
-      >
-
-        {/* Cancel */}
+            shadow-2xl
+          "
+        />
 
         <button
           type="button"
           onClick={() =>
-            setShowRemoveConfirm(false)
+            setShowPicturePreview(false)
           }
-          disabled={removingPicture}
           className="
-            px-5
-            py-2.5
-            rounded-xl
-            border
-            border-slate-300
-            dark:border-slate-600
-            text-slate-700
-            dark:text-slate-300
-            font-semibold
-            hover:bg-slate-100
-            dark:hover:bg-slate-800
+            absolute
+            -top-4
+            -right-4
+
+            h-10
+            w-10
+
+            rounded-full
+
+            bg-white
+            text-slate-800
+
+            text-2xl
+            font-bold
+
+            shadow-lg
+
+            hover:bg-red-500
+            hover:text-white
+
             transition
           "
         >
-          Cancel
+          ×
         </button>
+      </div>
+    </div>,
 
-        {/* Remove */}
+    document.body
+  )}
+      {/* ========================================= */}
+{/* REMOVE PROFILE PICTURE CONFIRMATION */}
+{/* ========================================= */}
 
-        <button
-          type="button"
-          onClick={
-            handleRemoveProfilePicture
-          }
-          disabled={removingPicture}
+{showRemoveConfirm &&
+  createPortal(
+    <div
+      className="
+        fixed
+        inset-0
+        z-[99999]
+
+        flex
+        items-center
+        justify-center
+
+        bg-black/70
+        backdrop-blur-sm
+
+        p-6
+      "
+      onClick={() =>
+        setShowRemoveConfirm(false)
+      }
+    >
+      <div
+        className="
+          w-full
+          max-w-md
+
+          rounded-2xl
+
+          bg-white
+          dark:bg-slate-900
+
+          border
+          border-slate-200
+          dark:border-slate-700
+
+          shadow-2xl
+
+          p-6
+        "
+        onClick={(e) =>
+          e.stopPropagation()
+        }
+      >
+
+        {/* Icon */}
+
+        <div
           className="
-            px-5
-            py-2.5
-            rounded-xl
-            bg-red-600
-            hover:bg-red-700
-            disabled:bg-red-400
-            text-white
-            font-semibold
-            transition
+            mx-auto
+            mb-4
+
+            flex
+            h-14
+            w-14
+
+            items-center
+            justify-center
+
+            rounded-full
+
+            bg-red-100
+            dark:bg-red-900/30
+
+            text-red-600
+            dark:text-red-400
+
+            text-2xl
           "
         >
-          {removingPicture
-            ? "Removing..."
-            : "Remove"}
-        </button>
+          🗑️
+        </div>
+
+        {/* Title */}
+
+        <h3
+          className="
+            text-xl
+            font-bold
+            text-center
+
+            text-slate-800
+            dark:text-white
+          "
+        >
+          Remove Profile Picture?
+        </h3>
+
+        {/* Message */}
+
+        <p
+          className="
+            mt-2
+
+            text-center
+            text-sm
+
+            text-slate-500
+            dark:text-slate-400
+          "
+        >
+          Are you sure you want to remove
+          your profile picture?
+        </p>
+
+        {/* Buttons */}
+
+        <div
+          className="
+            mt-6
+
+            flex
+            justify-end
+            gap-3
+          "
+        >
+
+          {/* Cancel */}
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowRemoveConfirm(false)
+            }
+            disabled={removingPicture}
+            className="
+              px-5
+              py-2.5
+
+              rounded-xl
+
+              border
+              border-slate-300
+              dark:border-slate-600
+
+              text-slate-700
+              dark:text-slate-300
+
+              font-semibold
+
+              hover:bg-slate-100
+              dark:hover:bg-slate-800
+
+              transition
+            "
+          >
+            Cancel
+          </button>
+
+          {/* Remove */}
+
+          <button
+            type="button"
+            onClick={
+              handleRemoveProfilePicture
+            }
+            disabled={removingPicture}
+            className="
+              px-5
+              py-2.5
+
+              rounded-xl
+
+              bg-red-600
+              hover:bg-red-700
+
+              disabled:bg-red-400
+
+              text-white
+              font-semibold
+
+              transition
+            "
+          >
+            {removingPicture
+              ? "Removing..."
+              : "Remove"}
+          </button>
+
+        </div>
 
       </div>
+    </div>,
 
-    </div>
-
-  </div>
-)}
+    document.body
+  )}
     </>
   );
 }

@@ -177,32 +177,40 @@ export default function Bookings() {
   };
 
   const handleAssignBooking = async (
-    bookingId,
-    logisticsId
-  ) => {
-    try {
-      await assignBooking(
-        bookingId,
-        logisticsId
-      );
+  bookingId,
+  logisticsId
+) => {
+  try {
+    const updatedBooking = await assignBooking(
+      bookingId,
+      logisticsId
+    );
 
-      toast.success(
-        "Logistics assigned successfully!"
-      );
+    // Update only the assigned booking
+    setBookings((prev) =>
+      prev.map((booking) =>
+        booking.booking_id === bookingId
+          ? updatedBooking
+          : booking
+      )
+    );
 
-      setAssignModalOpen(false);
-      setSelectedBooking(null);
+    toast.success(
+      "Logistics assigned successfully!"
+    );
 
-      fetchBookings();
-    } catch (error) {
-      console.error(error);
+    setAssignModalOpen(false);
+    setSelectedBooking(null);
 
-      toast.error(
-        error.response?.data?.detail ||
-          "Failed to assign logistics"
-      );
-    }
-  };
+  } catch (error) {
+    console.error(error);
+
+    toast.error(
+      error.response?.data?.detail ||
+        "Failed to assign logistics"
+    );
+  }
+};
 
   const handleExport = () => {
     const exportData = bookings.map(

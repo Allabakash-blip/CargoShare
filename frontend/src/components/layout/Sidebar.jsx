@@ -781,8 +781,8 @@ export default function Sidebar({
 
     flex-shrink-0
 
-    bg-slate-950/95
-    dark:bg-slate-950/95
+    bg-white/80
+dark:bg-slate-950/95
 
     backdrop-blur-xl
   "

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 
 from app.models.booking import Booking
+from app.models.payment import Payment
 from app.models.logistics import Logistics
 from app.models.notification import Notification
 from app.models.tracking import Tracking
@@ -63,13 +64,14 @@ async def create_booking(
 ):
 
     new_booking = Booking(
-        trader_id=current_user["user_id"],
-        pickup_location=booking.pickup_location,
-        delivery_location=booking.delivery_location,
-        goods_description=booking.goods_description,
-        weight=booking.weight,
-        status="Pending"
-    )
+    trader_id=current_user["user_id"],
+    pickup_location=booking.pickup_location,
+    delivery_location=booking.delivery_location,
+    goods_description=booking.goods_description,
+    weight=booking.weight,
+    amount=booking.amount,
+    status="Pending"
+)
 
     db.add(new_booking)
     db.commit()
@@ -252,6 +254,7 @@ def update_booking(
 async def assign_logistics(
     booking_id: int,
     assignment: BookingAssign,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user=Depends(admin_only)
 ):
@@ -433,10 +436,11 @@ async def assign_logistics(
     # SEND EMAIL
     # ==================================================
 
-    await send_booking_assigned_email(
-        logistics.email,
-        booking.booking_id,
-    )
+    background_tasks.add_task(
+    send_booking_assigned_email,
+    logistics.email,
+    booking.booking_id,
+)
 
     # ==================================================
     # ACTIVITY LOG
@@ -581,7 +585,10 @@ def update_booking_status(
     if status != expected_status:
         raise HTTPException(
             status_code=400,
-            detail=f"Status can only change from '{current_status}' to '{expected_status}'."
+            detail=(
+                f"Status can only change from "
+                f"'{current_status}' to '{expected_status}'."
+            )
         )
 
     # ----------------------------------------------
@@ -622,12 +629,40 @@ def update_booking_status(
             tracking.shipment_status = "Completed"
 
         # ------------------------------------------
+        # AUTOMATICALLY CREATE PAYMENT
+        # ------------------------------------------
+
+        existing_payment = db.query(Payment).filter(
+            Payment.booking_id == booking.booking_id
+        ).first()
+
+        if not existing_payment:
+
+            new_payment = Payment(
+                booking_id=booking.booking_id,
+                amount=booking.amount,
+                payment_method="Auto",
+                payment_status="Pending"
+            )
+
+            db.add(new_payment)
+
+            logger.info(
+                f"Automatic payment created for "
+                f"Booking #{booking.booking_id}"
+            )
+
+        # ------------------------------------------
         # Notify Trader
         # ------------------------------------------
         db.add(
             Notification(
                 user_id=booking.trader_id,
-                message=f"Shipment/Booking #{booking.booking_id} has been completed.",
+                message=(
+                    f"Shipment/Booking #{booking.booking_id} "
+                    f"has been completed. "
+                    f"Payment has been created and is Pending."
+                ),
                 status="Unread"
             )
         )
@@ -646,13 +681,18 @@ def update_booking_status(
             db.add(
                 Notification(
                     user_id=admin.user_id,
-                    message=f"Shipment/Booking #{booking.booking_id} has been completed.",
+                    message=(
+                        f"Shipment/Booking #{booking.booking_id} "
+                        f"has been completed. "
+                        f"Payment has been created."
+                    ),
                     status="Unread"
                 )
             )
 
         logger.info(
-            f"Completion notifications created for Booking #{booking.booking_id}"
+            f"Completion notifications created for "
+            f"Booking #{booking.booking_id}"
         )
 
     # ----------------------------------------------
@@ -668,11 +708,15 @@ def update_booking_status(
         db=db,
         user_email=current_user["email"],
         user_role=current_user["role"],
-        action=f"Updated Booking #{booking.booking_id} status to {status}",
+        action=(
+            f"Updated Booking #{booking.booking_id} "
+            f"status to {status}"
+        ),
     )
 
     logger.info(
-        f"Booking {booking.booking_id} status updated to {status}"
+        f"Booking {booking.booking_id} "
+        f"status updated to {status}"
     )
 
     return booking

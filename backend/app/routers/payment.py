@@ -138,8 +138,12 @@ async def update_payment(
     # Keep old status
     old_status = db_payment.payment_status
 
-    # Update status
+    # Update payment status
     db_payment.payment_status = payment.payment_status
+
+    # Update payment method when provided
+    if payment.payment_method:
+        db_payment.payment_method = payment.payment_method
 
     db.commit()
     db.refresh(db_payment)

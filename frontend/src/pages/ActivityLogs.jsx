@@ -114,7 +114,7 @@ export default function ActivityLogs() {
     return (
       <div className="flex flex-col">
 
-        <span className="font-medium text-slate-800">
+        <span className="font-medium text-slate-800 dark:text-slate-200">
           {date.toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
@@ -122,7 +122,7 @@ export default function ActivityLogs() {
           })}
         </span>
 
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-slate-500 dark:text-slate-400">
           {date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",

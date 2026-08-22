@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import Button from "./Button";
 
 export default function ConfirmModal({
@@ -12,12 +13,12 @@ export default function ConfirmModal({
 }) {
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className="
         fixed
         inset-0
-        z-50
+        z-[9999]
 
         flex
         items-center
@@ -25,10 +26,14 @@ export default function ConfirmModal({
 
         bg-black/50
         backdrop-blur-sm
+
+        p-4
       "
     >
       <div
         className="
+          relative
+
           w-full
           max-w-md
 
@@ -49,15 +54,42 @@ export default function ConfirmModal({
           duration-300
         "
       >
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+        {/* Header */}
+
+        <h2
+          className="
+            text-2xl
+            font-bold
+            text-slate-900
+            dark:text-white
+          "
+        >
           {title}
         </h2>
 
-        <p className="mt-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+        {/* Message */}
+
+        <p
+          className="
+            mt-4
+            text-slate-600
+            dark:text-slate-300
+            leading-relaxed
+          "
+        >
           {message}
         </p>
 
-        <div className="mt-8 flex justify-end gap-3">
+        {/* Buttons */}
+
+        <div
+          className="
+            mt-8
+            flex
+            justify-end
+            gap-3
+          "
+        >
           <Button
             variant="outline"
             onClick={onCancel}
@@ -69,12 +101,14 @@ export default function ConfirmModal({
           <Button
             variant="danger"
             loading={loading}
+            disabled={loading}
             onClick={onConfirm}
           >
             {confirmText}
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
